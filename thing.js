@@ -259,11 +259,11 @@ var Thing = function (options) {
         });
 
         this.client.on('mq.unsubscribe.fail', function (topic, response) {
-            self.emit('thing.subscribe.fail', topic, response);
+            self.emit('thing.unsubscribe.fail', topic, response);
         });
 
         this.client.on('mq.unsubscribe.success', function (topic, response) {
-            self.emit('thing.subscribe.success', topic, response);
+            self.emit('thing.unsubscribe.success', topic, response);
         });
 
         this.client.on('mq.message.arrived', function (message) {
@@ -319,7 +319,7 @@ var Thing = function (options) {
         if(isUndefined(stateObject)) {
             return null;
         }
-        
+
         stateObject.clientToken = (!isUndefined(clientToken) ? clientToken : guid());
         this.client.publish(buildThingShadowTopic(this.thingName, 'update'), JSON.stringify(stateObject));
         return stateObject.clientToken;
