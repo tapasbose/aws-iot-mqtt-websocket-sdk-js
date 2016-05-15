@@ -1,0 +1,29 @@
+{
+  "name": "aws-iot-mqtt-websocket-sdk-js",
+  "version": "1.0.0",
+  "authors": [
+    "Tapas Bose"
+  ],
+  "description": "aws-iot-mqtt-websocket-sdk",
+  "main": "thing.js",
+  "keywords": [
+    "iot",
+    "aws-iot",
+    "mqtt",
+    "websocket"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "cryptojslib": "^3.1.2",
+    "paho-mqtt-js": "^1.0.1",
+    "moment": "^2.13.0"
+  }
+}

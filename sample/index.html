@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="EN">
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <script type="text/javascript" src="../bower_components/cryptojslib/rollups/sha256.js"></script>
+    <script type="text/javascript" src="../bower_components/cryptojslib/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="../bower_components/paho-mqtt-js/mqttws31.js"></script>
+    <script type="text/javascript" src="../bower_components/moment/min/moment.min.js"></script>
+    <script type="text/javascript" src="../thing.js"></script>
+
+    <script type="text/javascript">
+        console.log('jym');
+
+        const thingName = 'your_thing_name';
+
+        var thing = new Thing({
+            regionName: 'your_region',
+            endpoint: 'your_aws_iot_endpoint',
+            accessKey: 'your_access_key',
+            secretKey: 'your_secret_key',
+            thingName: thingName
+        });
+
+        thing.register();
+
+        thing.on('thing.connection.success', function () {
+            console.log('thing.connection.success');
+        });
+
+        thing.on('thing.subscribe.success', function (topic) {
+            console.log('thing.subscribe.success', topic);
+
+            if(/get/.test(topic)) {
+                var clientToken = thing.get();
+            }
+        });
+
+        thing.on('thing.get.message.accepted', function (stateObject) {
+            console.log('thing.get.message.accepted', stateObject);
+        });
+
+        thing.on('thing.update.message.delta', function (stateObject) {
+            console.log('thing.update.message.delta', stateObject);
+        });
+    </script>
+</head>
+<body>
+
+</body>
