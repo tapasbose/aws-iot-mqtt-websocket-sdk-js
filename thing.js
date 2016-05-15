@@ -316,6 +316,10 @@ var Thing = function (options) {
     };
 
     this.update = function (stateObject, clientToken) {
+        if(isUndefined(stateObject)) {
+            return null;
+        }
+        
         stateObject.clientToken = (!isUndefined(clientToken) ? clientToken : guid());
         this.client.publish(buildThingShadowTopic(this.thingName, 'update'), JSON.stringify(stateObject));
         return stateObject.clientToken;
