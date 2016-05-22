@@ -74,6 +74,12 @@ This method takes a mandetory `stateObject` parameter and an optional `clientTok
 
 This method returns `clientToken` (If `stateObject` is undefined then it returns null).
 
+#### isConnected()
+A call to this method returns if the underlying mqtt client is connected or not. 
+
+#### getName()
+This method returns the name of the thing associated with it.
+
 ### Events
 * `thing.connection.success`: This event will be fired when the thing get connected successfully.
 * `thing.connection.fail`: This event will be fired when the thing fail to connect.
