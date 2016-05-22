@@ -1,3 +1,5 @@
+/* global Paho, CryptoJS */
+
 /**
  * The MIT License (MIT)
  Copyright (c) 2016 Tapas Bose
@@ -36,11 +38,11 @@ var Thing = function (options) {
     };
 
     SigV4Utils.getSignatureKey = function (key, dateStamp, regionName, serviceName) {
-        var kDate = CryptoJS.HmacSHA256(dateStamp, 'AWS4' + key);
-        var kRegion = CryptoJS.HmacSHA256(regionName, kDate);
-        var kService = CryptoJS.HmacSHA256(serviceName, kRegion);
-        var kSigning = CryptoJS.HmacSHA256('aws4_request', kService);
-        return kSigning;
+        var keyDate = CryptoJS.HmacSHA256(dateStamp, 'AWS4' + key);
+        var keyRegion = CryptoJS.HmacSHA256(regionName, keyDate);
+        var keyService = CryptoJS.HmacSHA256(serviceName, keyRegion);
+        var keySigning = CryptoJS.HmacSHA256('aws4_request', keyService);
+        return keySigning;
     };
 
     var MQTTClient = function (options) {
@@ -82,7 +84,6 @@ var Thing = function (options) {
 
         this.client.onConnectionLost = function () {
             self.emit('mq.connection.fail');
-            self.connected = false;
         };
 
         this.client.onMessageArrived = function (message) {
@@ -98,14 +99,19 @@ var Thing = function (options) {
         };
 
         this.emit = function (event) {
-            var listeners = this.listeners[event];
+            var handlers = this.listeners[event];
 
-            if (listeners) {
+            if (handlers) {
                 var args = Array.prototype.slice.apply(arguments, [1]);
 
-                for (var i = 0; i < listeners.length; i++) {
-                    var listener = listeners[i];
-                    listener.apply(null, args);
+                for (var i = 0; i < handlers.length; i++) {
+                    var handler = handlers[i];
+
+                    try {
+                        handler.apply(null, args);
+                    } catch(error) {
+                        console.log(error);
+                    }                
                 }
             }
         };
@@ -175,13 +181,13 @@ var Thing = function (options) {
     var guid = function () {
         var s4 = function () {
             return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-        }
+        };
 
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     };
 
     var isUndefined = function (value) {
-        return typeof value === 'undefined' || typeof value === null;
+        return typeof value === 'undefined' || value === null;
     };
 
     var buildThingShadowTopic = function (thingName, operation, type) {
@@ -224,14 +230,19 @@ var Thing = function (options) {
     };
 
     this.emit = function (event) {
-        var listeners = this.listeners[event];
+        var handlers = this.listeners[event];
 
-        if (listeners) {
+        if (handlers) {
             var args = Array.prototype.slice.apply(arguments, [1]);
 
-            for (var i = 0; i < listeners.length; i++) {
-                var listener = listeners[i];
-                listener.apply(null, args);
+            for (var i = 0; i < handlers.length; i++) {
+                var handler = handlers[i];
+                
+                try {
+                    handler.apply(null, args);
+                } catch(error) {
+                    console.log(error);
+                }                
             }
         }
     };
@@ -303,9 +314,17 @@ var Thing = function (options) {
     };
 
     this.unRegister = function () {
-        this.client.unSubscribe(buildThingShadowTopic(self.thingName, 'get', '+'));
-        this.client.unSubscribe(buildThingShadowTopic(self.thingName, 'update', '+'));
+        this.client.unSubscribe(buildThingShadowTopic(this.thingName, 'get', '+'));
+        this.client.unSubscribe(buildThingShadowTopic(this.thingName, 'update', '+'));
         this.client.disconnect();
+        
+        var events = Object.keys(this.listeners);
+        
+        if(events) {
+            for(var i = 0; i < events.length; i++) {
+                this.listeners[events[i]] = [];
+            }
+        }        
     };
 
     this.get = function (clientToken) {
@@ -323,5 +342,13 @@ var Thing = function (options) {
         stateObject.clientToken = (!isUndefined(clientToken) ? clientToken : guid());
         this.client.publish(buildThingShadowTopic(this.thingName, 'update'), JSON.stringify(stateObject));
         return stateObject.clientToken;
+    };
+    
+    this.isConnected = function() {
+        return this.client.isConnected();
+    };
+    
+    this.getName = function() {
+        return this.options.thingName;
     };
 };
